@@ -1,4 +1,5 @@
 {-# LANGUAGE UndecidableInstances #-}
+{-# OPTIONS_GHC "-Wno-unused-foralls" #-}
 
 -- | Классы типов.
 -- Локальный минимум: 4б.
@@ -20,6 +21,7 @@ import Control.Monad
 import Control.Monad.State
 import GHC.Generics
 import GHC.TypeLits hiding (Nat, KnownNat, natVal)
+import MetaUtils
 
 data Nat = Zero | Suc Nat
 
@@ -48,16 +50,9 @@ instance (All Eq as, All Hashable as) => Hashable (HList as) where
 -- 1. (1б)
 -- Постройте строчку, которая содержит список типов.
 
-class ShowTypeList (tys :: [Type]) where
-  showTypeList :: String
-
-instance ShowTypeList '[] where
-  showTypeList = "[]"
-
-instance (Typeable ty, ShowTypeList tys) => ShowTypeList (ty ': tys) where
-  showTypeList =
-    let s = showTypeList @tys in
-    "[" ++ typeName @ty ++ if s == "[]" then "]" else "," ++ drop 1 s
+-- Перепишите эту декларацию как вам надо, сохранив API.
+showTypeList :: forall (_tys :: [Type]) . String
+showTypeList = todo "showTypeList"
 
 typeName :: forall a. Typeable a => String
 typeName = tyConName $ typeRepTyCon $ typeRep $ Proxy @a
@@ -77,13 +72,8 @@ instance KnownNat Zero where
 instance KnownNat n => KnownNat (Suc n) where
   natVal = 1 + natVal @n
 
-reify :: Int -> (forall n. KnownNat n => Proxy n -> a) -> a
-reify n k
-  | n <= 0 = k $ Proxy @Zero
-  | otherwise = reify (n - 1) \(Proxy :: Proxy n) -> k $ Proxy @(Suc n)
-
 wonderId :: Int -> Int
-wonderId n = reify n (\(Proxy :: Proxy n) -> natVal @n)
+wonderId = todo "wonderId"
 
 
 -- 3. (1.5б)
@@ -94,15 +84,10 @@ data HSum (types :: [Type]) where
   There :: HSum as -> HSum (a ': as)
 
 hfoldMap :: Monoid m => (HSum as -> m) -> HList as -> m
-hfoldMap f = \case
-  HNil -> mempty
-  HCons x xs -> f (Here x) <> hfoldMap (f . There) xs
+hfoldMap = todo "hfoldMap"
 
 sumParticular :: HList '[Maybe Int, Int] -> Int
-sumParticular = getSum . hfoldMap \case
-  Here mb -> maybe (Sum 0) Sum mb
-  There (Here x) -> Sum x
-  There (There x) -> case x of
+sumParticular = getSum . hfoldMap (todo "sumParticular")
 
 -- Заметим, что передавать функцию от суммы всё равно,
 -- что передавать произведение функций. Заставим Haskell
@@ -111,22 +96,11 @@ sumParticular = getSum . hfoldMap \case
 class to <-- from where
   transform :: from -> to
 
-instance Sum Int <-- Maybe Int where
-  transform = \case Nothing -> mempty; Just x -> Sum x
-
-instance Sum Int <-- Int where
-  transform = Sum
-
 hfoldMap' :: forall m as . (Monoid m, All ((<--) m) as) => HList as -> m
-hfoldMap' = fold . hmap @((<--) m) transform
-
-hfoldMap'' :: (Monoid m, All ((<--) m) as) => HList as -> m
-hfoldMap'' = \case
-  HNil -> mempty
-  HCons x xs -> transform x <> hfoldMap' xs
+hfoldMap' = todo "hfoldMap'"
 
 sumParticular' :: HList '[Maybe Int, Int] -> Int
-sumParticular' = getSum . hfoldMap'
+sumParticular' = todo "sumParticular'"
 
 
 -- 4. (1.5)
@@ -137,38 +111,30 @@ newtype Key ty = Key { getKeyHash :: Int }
   deriving newtype (Eq, Ord)
 
 newKey :: Hashable a => a -> Key b
-newKey = Key . hash
+newKey = todo "newKey"
 
 -- Монада с изменяемым кешем.
 -- https://hackage.haskell.org/package/base-4.21.0.0/docs/Data-Dynamic.html
 type Cached a = State (Map Int Dynamic) a
 
 runCached :: Cached a -> (a, Map Int Dynamic)
-runCached comp = runState comp Map.empty
+runCached = todo "runCached"
 
 evalCached :: Cached a -> a
-evalCached comp = evalState comp Map.empty
+evalCached = todo "evalCached"
 
 getCache :: Typeable ty => Key ty -> Cached (Maybe ty)
-getCache key = gets $ fromDynamic <=< (!? getKeyHash key)
+getCache = todo "getCache"
 
 storeCache :: Typeable ty => Key ty -> ty -> Cached ()
-storeCache key value = modify (Map.insert (getKeyHash key) (toDyn value))
+storeCache = todo "storeCache"
 
 -- Функция, принимающая функцию от прозвольного числа аргументов
 -- и возвращающая функцию поддерживающую кеширование от этих аргументов.
 cached
   :: (All Eq as, All Hashable as, Typeable b)
   => (HList as -> b) -> HList as -> Cached b
-cached f args = do
-  let key = newKey args
-  getCache key >>= \case
-    Nothing -> do
-      let result = f args
-      storeCache key result
-      pure result
-    Just value ->
-      pure value
+cached = todo "cached"
 
 fibs :: [Integer]
 fibs = 1 : 1 : zipWith (+) fibs (tail fibs)

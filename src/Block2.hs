@@ -4,6 +4,7 @@ module Block2 where
 
 import Data.Void
 import Data.Kind
+import MetaUtils
 
 
 -- 1. (1б)
@@ -34,9 +35,4 @@ type family Interpret (prop :: Prop Type) :: Type where
 -- Докажите следующее утверждение логики высказываний с помощью Haskell.
 -- TODO ссылка на задание
 a8Like :: Interpret ((a :-> c) :/\ (b :-> c) <-> a :\/ b :-> c)
-a8Like = (l2r, r2l)
-  where
-    l2r (f, g) = \case
-      Left a -> f a
-      Right b -> g b
-    r2l f = (f . Left, f . Right)
+a8Like = todo "a8Like"

@@ -32,7 +32,6 @@ type family Interpret (prop :: Prop Type) :: Type where
   Interpret (p :-> q) = Interpret p -> Interpret q
 
 -- Докажите следующее утверждение логики высказываний с помощью Haskell.
--- TODO ссылка на задание
 a8Like :: Interpret ((a :-> c) :/\ (b :-> c) <-> a :\/ b :-> c)
 a8Like = (l2r, r2l)
   where

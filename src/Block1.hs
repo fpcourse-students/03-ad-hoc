@@ -48,16 +48,17 @@ instance (All Eq as, All Hashable as) => Hashable (HList as) where
 -- 1. (1б)
 -- Постройте строчку, которая содержит список типов.
 
-class ShowTypeList (tys :: [Type]) where
-  showTypeList :: String
+class ShowTypes (tys :: [Type]) where
+  showTypes :: [String]
 
-instance ShowTypeList '[] where
-  showTypeList = "[]"
+instance ShowTypes '[] where
+  showTypes = []
 
-instance (Typeable ty, ShowTypeList tys) => ShowTypeList (ty ': tys) where
-  showTypeList =
-    let s = showTypeList @tys in
-    "[" ++ typeName @ty ++ if s == "[]" then "]" else "," ++ drop 1 s
+instance (Typeable ty, ShowTypes tys) => ShowTypes (ty ': tys) where
+  showTypes = typeName @ty : showTypes @tys
+
+showTypeList :: forall (tys :: [Type]) . ShowTypes tys => String
+showTypeList = "[" ++ List.intercalate "," (showTypes @tys) ++ "]"
 
 typeName :: forall a. Typeable a => String
 typeName = tyConName $ typeRepTyCon $ typeRep $ Proxy @a

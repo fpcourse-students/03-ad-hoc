@@ -50,7 +50,7 @@ instance (All Eq as, All Hashable as) => Hashable (HList as) where
 -- 1. (1б)
 -- Постройте строчку, которая содержит список типов.
 
--- Перепишите эту декларацию как вам надо, сохранив API.
+-- Перепишите эту декларацию как вам надо, сохранив тесты.
 showTypeList :: forall (_tys :: [Type]) . String
 showTypeList = todo "showTypeList"
 

@@ -96,8 +96,12 @@ library
     Level1
     Level2
     Level3
+    Defs
   build-depends:
-    meta-utils
+    , meta-utils
+    -- домашка 3: хеш аргументов и состояние в задаче про кеш
+    , hashable
+    , mtl
   if flag(lambda)
     buildable: False
 
@@ -150,8 +154,11 @@ test-suite homework-test
       SpecLevel1
       SpecLevel2
       SpecLevel3
+      FamilyCheck
     build-depends:
-      homework
+      , homework
+      , hashable
+      , template-haskell
   ghc-options:
     -threaded
     -rtsopts

@@ -69,31 +69,53 @@ showTypeList :: forall (tys :: [Type]) . String
 showTypeList = todo "1.2"
 
 
--- 1.3. Из значения в тип и обратно
+-- 1.3. Дефункционализация
 --
--- В конспекте reify и wonderId записаны через типовые абстракции (\ @n -> ...). Запишите их
--- техникой Proxy из главы 2: продолжение получает не тип, а значение Proxy n.
+-- Программа с функцией высшего порядка и три места, где для неё создаются предикаты:
+
+filterHO :: (Int -> Bool) -> [Int] -> [Int]
+filterHO p = \case
+  [] -> []
+  x : xs -> if p x then x : filterHO p xs else filterHO p xs
+
+evens :: [Int] -> [Int]
+evens = filterHO even
+
+greaterThan :: Int -> [Int] -> [Int]
+greaterThan n = filterHO (> n)
+
+both :: (Int -> Bool) -> (Int -> Bool) -> [Int] -> [Int]
+both p q = filterHO (\x -> p x && q x)
+
+-- Избавьтесь в ней от функций высшего порядка:
 --
---   * reify n k вызывает k с типом-числом, равным n; для n <= 0 это Zero;
---   * wonderId поднимает число в тип с помощью reify и опускает обратно с помощью natVal,
---     поэтому на неотрицательных числах совпадает с id.
+--   * Pred — тип данных с конструктором на каждое место, где создаётся предикат; то, что
+--     лямбда захватывала, становится полями конструктора;
+--   * applyPred — интерпретатор этого типа;
+--   * filterFO — фильтр первого порядка;
+--   * isEven, isGreater, isBoth — предикаты трёх мест создания. Тесты строят предикаты
+--     только этими функциями, так что имена и число конструкторов — на ваше усмотрение.
+--
+-- Pred обязан оставаться в классах Show и Eq: в отличие от функций, предикаты-данные можно
+-- печатать и сравнивать, и тесты этим пользуются. Равные предикаты — построенные одинаково.
 
-data Nat = Zero | Suc Nat
+data Pred = PredTodo -- Заглушка: замените своими конструкторами.
+  deriving (Show, Eq)
 
-class KnownNat (n :: Nat) where
-  natVal :: Int
+applyPred :: Pred -> Int -> Bool
+applyPred = todo "1.3 applyPred"
 
-instance KnownNat Zero where
-  natVal = 0
+filterFO :: Pred -> [Int] -> [Int]
+filterFO = todo "1.3 filterFO"
 
-instance KnownNat n => KnownNat (Suc n) where
-  natVal = 1 + natVal @n
+isEven :: Pred
+isEven = todo "1.3 isEven"
 
-reify :: Int -> (forall n. KnownNat n => Proxy n -> a) -> a
-reify _ _ = todo "1.3 reify"
+isGreater :: Int -> Pred
+isGreater = todo "1.3 isGreater"
 
-wonderId :: Int -> Int
-wonderId = todo "1.3 wonderId"
+isBoth :: Pred -> Pred -> Pred
+isBoth = todo "1.3 isBoth"
 
 
 -- 1.4. Формулы как типы

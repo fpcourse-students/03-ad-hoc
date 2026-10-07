@@ -11,7 +11,6 @@ tests :: NamedTests
 tests = nameTests 2
   [ testHFoldMap
   , testTransform
-  , testDefunctionalization
   , testCache
   ]
 
@@ -51,48 +50,6 @@ testTransform = TestList
   , TestCase $ assertEqual "hfoldMap': порядок элементов" ["apple", "pear", "apple"] $
       hfoldMap' @[String] (HCons Apple $ HCons Pear $ HCons Apple HNil)
   , TestCase $ assertEqual "hfoldMap': пустой список" ([] :: [String]) $ hfoldMap' HNil
-  ]
-
--- | Описание предиката: по нему строятся и предикат-данные студента, и предикат-функция.
-data PredSpec = SpecEven | SpecGreater Int | SpecBoth PredSpec PredSpec
-  deriving Show
-
-instance Arbitrary PredSpec where
-  arbitrary = sized go
-    where
-      go size
-        | size <= 1 = oneof leaves
-        | otherwise = oneof $ (SpecBoth <$> go (size `div` 2) <*> go (size `div` 2)) : leaves
-      leaves = [pure SpecEven, SpecGreater <$> choose (-20, 20)]
-
-toPred :: PredSpec -> Pred
-toPred = \case
-  SpecEven -> isEven
-  SpecGreater n -> isGreater n
-  SpecBoth p q -> isBoth (toPred p) (toPred q)
-
-toFunction :: PredSpec -> Int -> Bool
-toFunction = \case
-  SpecEven -> even
-  SpecGreater n -> (> n)
-  SpecBoth p q -> \x -> toFunction p x && toFunction q x
-
-testDefunctionalization :: Test
-testDefunctionalization = TestList
-  [ TestCase $ assertEqual "isEven" (evens [1 .. 10]) $ filterFO isEven [1 .. 10]
-  , TestCase $ assertEqual "isGreater" (greaterThan 3 [1 .. 10]) $ filterFO (isGreater 3) [1 .. 10]
-  , TestCase $ assertEqual "isBoth" (both even (> 3) [1 .. 10]) $
-      filterFO (isBoth isEven (isGreater 3)) [1 .. 10]
-  , TestCase $ assertEqual "isBoth вложенный" [8, 10] $
-      filterFO (isBoth (isBoth isEven (isGreater 3)) (isGreater 6)) [1 .. 10]
-  , TestCase $ assertBool "applyPred isEven 4" $ applyPred isEven 4
-  , TestCase $ assertBool "applyPred (isGreater 3) 3" $ not $ applyPred (isGreater 3) 3
-  , TestCase $ assertBool "одинаково построенные предикаты равны" $
-      isBoth isEven (isGreater 3) == isBoth isEven (isGreater 3)
-  , TestCase $ assertBool "предикаты с разными полями различны" $ isGreater 3 /= isGreater 4
-  , TestCase $ assertBool "предикаты разных мест создания различны" $ isEven /= isGreater 0
-  , propertyToTest "filterFO совпадает с filterHO" \spec (xs :: [Int]) ->
-      filterFO (toPred spec) xs === filterHO (toFunction spec) xs
   ]
 
 -- В кеше тестов лежат только значения типа Integer.

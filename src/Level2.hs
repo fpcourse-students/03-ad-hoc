@@ -59,56 +59,7 @@ sumParticular' :: HList '[Maybe Int, Int] -> Int
 sumParticular' = todo "2.2 sumParticular'"
 
 
--- 2.3. Дефункционализация
---
--- Программа с функцией высшего порядка и три места, где для неё создаются предикаты:
-
-filterHO :: (Int -> Bool) -> [Int] -> [Int]
-filterHO p = \case
-  [] -> []
-  x : xs -> if p x then x : filterHO p xs else filterHO p xs
-
-evens :: [Int] -> [Int]
-evens = filterHO even
-
-greaterThan :: Int -> [Int] -> [Int]
-greaterThan n = filterHO (> n)
-
-both :: (Int -> Bool) -> (Int -> Bool) -> [Int] -> [Int]
-both p q = filterHO (\x -> p x && q x)
-
--- Избавьтесь в ней от функций высшего порядка:
---
---   * Pred — тип данных с конструктором на каждое место, где создаётся предикат; то, что
---     лямбда захватывала, становится полями конструктора;
---   * applyPred — интерпретатор этого типа;
---   * filterFO — фильтр первого порядка;
---   * isEven, isGreater, isBoth — предикаты трёх мест создания. Тесты строят предикаты
---     только этими функциями, так что имена и число конструкторов — на ваше усмотрение.
---
--- Pred обязан оставаться в классах Show и Eq: в отличие от функций, предикаты-данные можно
--- печатать и сравнивать, и тесты этим пользуются. Равные предикаты — построенные одинаково.
-
-data Pred = PredTodo -- Заглушка: замените своими конструкторами.
-  deriving (Show, Eq)
-
-applyPred :: Pred -> Int -> Bool
-applyPred = todo "2.3 applyPred"
-
-filterFO :: Pred -> [Int] -> [Int]
-filterFO = todo "2.3 filterFO"
-
-isEven :: Pred
-isEven = todo "2.3 isEven"
-
-isGreater :: Int -> Pred
-isGreater = todo "2.3 isGreater"
-
-isBoth :: Pred -> Pred -> Pred
-isBoth = todo "2.3 isBoth"
-
-
--- 2.4. Кеширующий декоратор
+-- 2.3. Кеширующий декоратор
 --
 -- cached превращает функцию от произвольного числа аргументов (они собраны в HList)
 -- в функцию, которая запоминает результаты. Кеш один на все функции и все типы
@@ -135,24 +86,24 @@ newtype Key ty = Key { getKeyHash :: Int }
 type Cached a = State (Map Int Dynamic) a
 
 newKey :: Hashable a => a -> Key b
-newKey = todo "2.4 newKey"
+newKey = todo "2.3 newKey"
 
 runCached :: Cached a -> (a, Map Int Dynamic)
-runCached = todo "2.4 runCached"
+runCached = todo "2.3 runCached"
 
 evalCached :: Cached a -> a
-evalCached = todo "2.4 evalCached"
+evalCached = todo "2.3 evalCached"
 
 getCache :: Typeable ty => Key ty -> Cached (Maybe ty)
-getCache = todo "2.4 getCache"
+getCache = todo "2.3 getCache"
 
 storeCache :: Typeable ty => Key ty -> ty -> Cached ()
-storeCache = todo "2.4 storeCache"
+storeCache = todo "2.3 storeCache"
 
 cached
   :: (All Eq tys, All Hashable tys, Typeable res)
   => (HList tys -> res) -> HList tys -> Cached res
-cached = todo "2.4 cached"
+cached = todo "2.3 cached"
 
 -- Пример для экспериментов: сумма первых n чисел Фибоначчи считается долго, а повторный
 -- вызов с теми же аргументами берёт ответ из кеша. Время видно в интерпретаторе после
